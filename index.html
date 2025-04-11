@@ -95,6 +95,18 @@
           background-color: #00bfff;
           color: black;
         }
+
+        .timezone-info {
+            margin-top: 20px;
+            font-size: 1em;
+            text-align: center;
+            color: #444;
+        }
+            
+        .dark-mode .timezone-info {
+            color: #ccc;
+        }
+
     </style>
 </head>
 <body>
@@ -106,6 +118,12 @@
     <div class="countdown-time" id="countdown">Loading...</div>
 </div>
 
+<div class="timezone-info">
+  <h3>Current Times</h3>
+  <p>🕒 <strong>Westmont, IL:</strong> <span id="westmont-time">Loading...</span></p>
+  <p>🕒 <strong>Stockholm, SE:</strong> <span id="stockholm-time">Loading...</span></p>
+</div>
+    
 <!-- Confetti Library -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -116,27 +134,36 @@
     let hasCelebrated = false;
 
     function updateCountdown() {
-      const now = new Date();
-      const targetUTC = new Date(Date.UTC(2025, 4, 29, 23, 0, 0)); // 5PM UTC-6
-      const diff = targetUTC - now;
-
+      const now = DateTime.local();
+    
+      // Target time in Westmont, IL (Central Time)
+      const targetTime = DateTime.fromObject(
+        { year: 2025, month: 5, day: 29, hour: 17, minute: 0 },
+        { zone: 'America/Chicago' }
+      );
+    
+      const diff = targetTime.diff(now, ['days', 'hours', 'minutes', 'seconds']).toObject();
       const countdownEl = document.getElementById("countdown");
-
-      if (diff <= 0 && !hasCelebrated) {
+    
+      if (targetTime <= now && !hasCelebrated) {
         hasCelebrated = true;
         countdownEl.innerHTML = `🎆✨ <span class="celebration">He's here!</span> ✨🎆`;
         launchConfetti();
         playSound();
-        return;
+      } else if (targetTime > now) {
+        const d = Math.floor(diff.days);
+        const h = Math.floor(diff.hours);
+        const m = Math.floor(diff.minutes);
+        const s = Math.floor(diff.seconds);
+        countdownEl.innerText = `${d}d ${h}h ${m}m ${s}s`;
       }
-
-      if (diff > 0) {
-        const seconds = Math.floor((diff / 1000) % 60);
-        const minutes = Math.floor((diff / 1000 / 60) % 60);
-        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        countdownEl.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-      }
+    
+      // Add time displays
+      document.getElementById("westmont-time").innerText =
+        now.setZone("America/Chicago").toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
+    
+      document.getElementById("stockholm-time").innerText =
+        now.setZone("Europe/Stockholm").toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
     }
 
     function launchConfetti() {
