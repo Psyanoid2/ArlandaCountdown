@@ -1,150 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Is he here yet?-Countdown</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>He's Here Countdown</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Luxon for timezone handling -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
 
-    <style>
-        body {
-          background: #fff;
-          color: #000;
-          font-family: 'Segoe UI', sans-serif;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-          margin: 0;
-          transition: background 0.4s, color 0.4s;
-        }
+  <style>
+    body {
+      background: #fff;
+      color: #000;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      transition: background 0.4s, color 0.4s;
+    }
 
-        .dark-mode {
-          background: #111;
-          color: #f0f0f0;
-        }
+    .dark-mode {
+      background: #111;
+      color: #f0f0f0;
+    }
 
-        .countdown-widget {
-          background-color: #f9f9f9;
-          border: 2px solid #ddd;
-          border-radius: 16px;
-          padding: 30px 40px;
-          max-width: 320px;
-          text-align: center;
-          box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-          transition: background 0.3s, border 0.3s;
-        }
+    .countdown-widget {
+      background-color: #f9f9f9;
+      border: 2px solid #ddd;
+      border-radius: 16px;
+      padding: 30px 40px;
+      max-width: 320px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      transition: background 0.3s, border 0.3s;
+    }
 
-        .dark-mode .countdown-widget {
-          background-color: #1e1e1e;
-          border-color: #444;
-        }
+    .dark-mode .countdown-widget {
+      background-color: #1e1e1e;
+      border-color: #444;
+    }
 
-        .countdown-widget h2 {
-          font-size: 1.1em;
-          margin-bottom: 16px;
-        }
+    .countdown-widget h2 {
+      font-size: 1.1em;
+      margin-bottom: 16px;
+    }
 
-        .countdown-time {
-          font-size: 2em;
-          font-weight: bold;
-          color: #007bff;
-        }
+    .countdown-time {
+      font-size: 2em;
+      font-weight: bold;
+      color: #007bff;
+    }
 
-        .celebration {
-          font-size: 2.5em;
-          color: #e91e63;
-          animation: pop 0.6s ease-in-out;
-        }
+    .celebration {
+      font-size: 2.5em;
+      color: #e91e63;
+      animation: pop 0.6s ease-in-out;
+    }
 
-        .dark-mode .celebration {
-          color: #ff4081;
-        }
+    .dark-mode .celebration {
+      color: #ff4081;
+    }
 
-        @keyframes pop {
-          0% { transform: scale(0.8); opacity: 0; }
-          50% { transform: scale(1.1); opacity: 1; }
-          100% { transform: scale(1); }
-        }
+    @keyframes pop {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); }
+    }
 
-        .toggle-btn {
-          position: absolute;
-          top: 20px;
-          right: 20px;
-          background: none;
-          border: 2px solid #007bff;
-          padding: 8px 14px;
-          border-radius: 20px;
-          font-weight: bold;
-          cursor: pointer;
-          color: #007bff;
-          transition: background 0.3s;
-        }
+    .timezone-info {
+      margin-top: 20px;
+      font-size: 1em;
+      text-align: center;
+      color: #444;
+    }
 
-        .dark-mode .toggle-btn {
-          color: #00bfff;
-          border-color: #00bfff;
-        }
+    .dark-mode .timezone-info {
+      color: #ccc;
+    }
 
-        .toggle-btn:hover {
-          background-color: #007bff;
-          color: white;
-        }
+    .toggle-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: 2px solid #007bff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #007bff;
+      transition: background 0.3s;
+    }
 
-        .dark-mode .toggle-btn:hover {
-          background-color: #00bfff;
-          color: black;
-        }
+    .dark-mode .toggle-btn {
+      color: #00bfff;
+      border-color: #00bfff;
+    }
 
-        .timezone-info {
-            margin-top: 20px;
-            font-size: 1em;
-            text-align: center;
-            color: #444;
-        }
-            
-        .dark-mode .timezone-info {
-            color: #ccc;
-        }
+    .toggle-btn:hover {
+      background-color: #007bff;
+      color: white;
+    }
 
-    </style>
+    .dark-mode .toggle-btn:hover {
+      background-color: #00bfff;
+      color: black;
+    }
+  </style>
 </head>
 <body>
 
-<button class="toggle-btn" onclick="toggleDarkMode()">🌓 Toggle Mode</button>
+  <button class="toggle-btn" onclick="toggleDarkMode()">🌓 Toggle Mode</button>
 
-<div class="countdown-widget" id="widget">
-    <h2>Countdown to May 29, 2025<br>5:00 PM (UTC-6)</h2>
+  <div class="countdown-widget" id="widget">
+    <h2>Countdown to May 29, 2025<br>5:00 PM (Westmont, IL)</h2>
     <div class="countdown-time" id="countdown">Loading...</div>
-</div>
+  </div>
 
-<div class="timezone-info">
-  <h3>Current Times</h3>
-  <p>🕒 <strong>Westmont, IL:</strong> <span id="westmont-time">Loading...</span></p>
-  <p>🕒 <strong>Stockholm, SE:</strong> <span id="stockholm-time">Loading...</span></p>
-</div>
-    
-<!-- Confetti Library -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <div class="timezone-info">
+    <h3>Current Times</h3>
+    <p>🕒 <strong>Westmont, IL:</strong> <span id="westmont-time">Loading...</span></p>
+    <p>🕒 <strong>Stockholm, SE:</strong> <span id="stockholm-time">Loading...</span></p>
+  </div>
 
-<!-- Sound Effect -->
-<audio id="cheer-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_408d7e3cf8.mp3"></audio>
+  <!-- Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-<script>
+  <!-- Sound Effect -->
+  <audio id="cheer-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_408d7e3cf8.mp3"></audio>
+
+  <script>
+    const { DateTime } = luxon;
+
     let hasCelebrated = false;
 
     function updateCountdown() {
       const now = DateTime.local();
-    
+
       // Target time in Westmont, IL (Central Time)
       const targetTime = DateTime.fromObject(
         { year: 2025, month: 5, day: 29, hour: 17, minute: 0 },
         { zone: 'America/Chicago' }
       );
-    
+
       const diff = targetTime.diff(now, ['days', 'hours', 'minutes', 'seconds']).toObject();
       const countdownEl = document.getElementById("countdown");
-    
+
       if (targetTime <= now && !hasCelebrated) {
         hasCelebrated = true;
         countdownEl.innerHTML = `🎆✨ <span class="celebration">He's here!</span> ✨🎆`;
@@ -157,11 +160,11 @@
         const s = Math.floor(diff.seconds);
         countdownEl.innerText = `${d}d ${h}h ${m}m ${s}s`;
       }
-    
+
       // Add time displays
       document.getElementById("westmont-time").innerText =
         now.setZone("America/Chicago").toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
-    
+
       document.getElementById("stockholm-time").innerText =
         now.setZone("Europe/Stockholm").toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
     }
@@ -171,18 +174,8 @@
       const end = Date.now() + duration;
 
       (function frame() {
-        confetti({
-          particleCount: 5,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 }
-        });
-        confetti({
-          particleCount: 5,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 }
-        });
+        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
 
         if (Date.now() < end) {
           requestAnimationFrame(frame);
@@ -203,7 +196,7 @@
 
     setInterval(updateCountdown, 1000);
     updateCountdown();
-</script>
+  </script>
 
 </body>
 </html>
