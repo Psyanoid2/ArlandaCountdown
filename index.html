@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Is he here yet?-Countdown</title>
+  <title>Is she here yet? - Countdown</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Luxon for timezone handling -->
   <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
@@ -31,7 +31,7 @@
       border: 2px solid #ddd;
       border-radius: 16px;
       padding: 30px 40px;
-      max-width: 320px;
+      max-width: 340px;
       text-align: center;
       box-shadow: 0 8px 20px rgba(0,0,0,0.05);
       transition: background 0.3s, border 0.3s;
@@ -80,10 +80,9 @@
       color: #ccc;
     }
 
-    .toggle-btn {
+    .toggle-btn, .config-btn {
       position: absolute;
       top: 20px;
-      right: 20px;
       background: none;
       border: 2px solid #007bff;
       padding: 8px 14px;
@@ -94,35 +93,114 @@
       transition: background 0.3s;
     }
 
-    .dark-mode .toggle-btn {
-      color: #00bfff;
-      border-color: #00bfff;
-    }
-
-    .toggle-btn:hover {
+    .toggle-btn:hover, .config-btn:hover {
       background-color: #007bff;
       color: white;
     }
 
-    .dark-mode .toggle-btn:hover {
+    .dark-mode .toggle-btn,
+    .dark-mode .config-btn {
+      color: #00bfff;
+      border-color: #00bfff;
+    }
+
+    .dark-mode .toggle-btn:hover,
+    .dark-mode .config-btn:hover {
       background-color: #00bfff;
       color: black;
+    }
+
+    .toggle-btn {
+      right: 20px;
+    }
+
+    .config-btn {
+      left: 20px;
+    }
+
+    /* Modal styling */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+    }
+
+    .modal-content input {
+      padding: 10px;
+      font-size: 1em;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .modal-content button {
+      margin-top: 15px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .save-btn {
+      background: #007bff;
+      color: white;
+    }
+
+    .cancel-btn {
+      background: #ccc;
+      margin-left: 8px;
+    }
+
+    .dark-mode .modal-content {
+      background: #1e1e1e;
+      color: #f0f0f0;
     }
   </style>
 </head>
 <body>
 
+  <button class="config-btn" onclick="openModal()">🕓 Change Arrival Time</button>
   <button class="toggle-btn" onclick="toggleDarkMode()">🌓 Toggle Mode</button>
 
   <div class="countdown-widget" id="widget">
-    <h2>Countdown to May 29, 2025<br>5:00 PM (Westmont, IL)</h2>
+    <h2 id="target-label">Countdown to December 20, 2025<br>5:00 PM (Stockholm, GMT+2)</h2>
     <div class="countdown-time" id="countdown">Loading...</div>
   </div>
 
   <div class="timezone-info">
     <h3>Current Times</h3>
-    <p>🕒 <strong>Westmont, IL:</strong> <span id="westmont-time">Loading...</span></p>
+    <p>🕒 <strong>New York City, NY:</strong> <span id="newyork-time">Loading...</span></p>
     <p>🕒 <strong>Stockholm, SE:</strong> <span id="stockholm-time">Loading...</span></p>
+  </div>
+
+  <!-- Modal for changing time -->
+  <div class="modal" id="arrivalModal">
+    <div class="modal-content">
+      <h3>Change Arrival Time (Stockholm Time)</h3>
+      <input type="datetime-local" id="arrivalInput">
+      <div>
+        <button class="save-btn" onclick="saveArrivalTime()">Save</button>
+        <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <!-- Confetti Library -->
@@ -133,24 +211,25 @@
 
   <script>
     const { DateTime } = luxon;
-
     let hasCelebrated = false;
+
+    // Load saved time or use default
+    let saved = localStorage.getItem("arrivalTime");
+    let targetTime = saved
+      ? DateTime.fromISO(saved)
+      : DateTime.fromObject(
+          { year: 2025, month: 12, day: 20, hour: 17, minute: 0 },
+          { zone: "Europe/Stockholm" }
+        );
 
     function updateCountdown() {
       const now = DateTime.local();
-
-      // Target time in Westmont, IL (Central Time)
-      const targetTime = DateTime.fromObject(
-        { year: 2025, month: 5, day: 29, hour: 17, minute: 0 },
-        { zone: 'America/Chicago' }
-      );
-
       const diff = targetTime.diff(now, ['days', 'hours', 'minutes', 'seconds']).toObject();
       const countdownEl = document.getElementById("countdown");
 
       if (targetTime <= now && !hasCelebrated) {
         hasCelebrated = true;
-        countdownEl.innerHTML = `🎆✨ <span class="celebration">He's here!</span> ✨🎆`;
+        countdownEl.innerHTML = `🎆✨ <span class="celebration">She’s here!</span> ✨🎆`;
         launchConfetti();
         playSound();
       } else if (targetTime > now) {
@@ -161,42 +240,69 @@
         countdownEl.innerText = `${d}d ${h}h ${m}m ${s}s`;
       }
 
-      // Add time displays
-      document.getElementById("westmont-time").innerText =
-        now.setZone("America/Chicago").toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
+      document.getElementById("newyork-time").innerText =
+        now.setZone("America/New_York").toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
 
       document.getElementById("stockholm-time").innerText =
         now.setZone("Europe/Stockholm").toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
+
+      document.getElementById("target-label").innerHTML =
+        `Countdown to ${targetTime.toFormat("MMMM d, yyyy")}<br>${targetTime.toFormat("h:mm a")} (Stockholm, GMT+2)`;
     }
 
+    // Modal controls
+    function openModal() {
+      const modal = document.getElementById("arrivalModal");
+      modal.style.display = "flex";
+
+      const localTime = targetTime.setZone("Europe/Stockholm");
+      document.getElementById("arrivalInput").value = localTime.toFormat("yyyy-LL-dd'T'HH:mm");
+    }
+
+    function closeModal() {
+      document.getElementById("arrivalModal").style.display = "none";
+    }
+
+    function saveArrivalTime() {
+      const val = document.getElementById("arrivalInput").value;
+      if (!val) return;
+
+      const newTime = DateTime.fromISO(val, { zone: "Europe/Stockholm" });
+      if (!newTime.isValid) {
+        alert("Invalid date/time.");
+        return;
+      }
+
+      targetTime = newTime;
+      localStorage.setItem("arrivalTime", newTime.toISO());
+      hasCelebrated = false;
+      closeModal();
+      updateCountdown();
+    }
+
+    // Effects
     function launchConfetti() {
       const duration = 3 * 1000;
       const end = Date.now() + duration;
-
       (function frame() {
         confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
         confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
-
-        if (Date.now() < end) {
-          requestAnimationFrame(frame);
-        }
+        if (Date.now() < end) requestAnimationFrame(frame);
       })();
     }
 
     function playSound() {
       const sound = document.getElementById("cheer-sound");
-      sound.play().catch(e => {
-        console.log("Autoplay prevented. Click anywhere to enable sound.");
-      });
+      sound.play().catch(() => console.log("Autoplay prevented; click to enable sound."));
     }
 
     function toggleDarkMode() {
       document.body.classList.toggle("dark-mode");
     }
 
+    // Initialize
     setInterval(updateCountdown, 1000);
     updateCountdown();
   </script>
-
 </body>
 </html>
